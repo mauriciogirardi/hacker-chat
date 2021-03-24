@@ -4,7 +4,8 @@ import { constants } from './constants.js'
 const {
   MESSAGE_RECEIVED,
   ACTIVITYLOG_UPDATE,
-  STATUS_UPDATED
+  STATUS_UPDATED,
+  MESSAGE_SEND
 } = constants.events.app
 
 export default class TerminalController {
@@ -29,7 +30,7 @@ export default class TerminalController {
   #onInputReceived(eventEmitter) {
     return function () {
       const message = this.getValue()
-      console.log(message)
+      eventEmitter.emit(MESSAGE_SEND, message)
       this.clearValue()
     }
   }
@@ -39,7 +40,7 @@ export default class TerminalController {
       const { userName, message } = msg
       const color = this.#getUserColor(userName)
 
-      chat.addItem(`{${color}}{bold}${userName}{/}: ${message}`)
+      chat.addItem(`${color}{bold}${userName}{/}: ${message}`)
 
       screen.render()
     }

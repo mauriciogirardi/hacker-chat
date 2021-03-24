@@ -86,7 +86,7 @@ export default class ComponentsBuilder {
       parent: this.#layout,
       width: '25%',
       height: '90%',
-      items: ['{bold}Users  on Room{/}']
+      items: ['{bold}Users on Room{/}']
     })
 
     return this
