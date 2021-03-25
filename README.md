@@ -14,3 +14,26 @@ Além de receber todos estes eventos, vai também estabilizar a conexão entre m
 - Aula 04 Criando nosso comando NPM Customizado, publicação de pacotes NPM e servidor na Web, Nessa aula vamos aprender a transformar um arquivo 
 JavaScript em um executável. Vai conhecer comandos NPM utilitários para criar seu próprio comando global.
 Além disso, você vai publicar o programa de linha de comando no NPM Registry para que todos no mundo possam baixar e testar seu programa.
+
+## Aplicação
+
+<div align="center">
+  <img src="https://github.com/mauriciogirardi/hacker-chat/blob/main/layout.png"/>
+</div>
+
+## instalação
+
+- Você precisa ter o NodeJs e Npm instalado em sua máquina.
+
+```bash
+
+# instale o hacker-chat 
+npm install -g @mauriciogirardi/hacker-chat-client
+
+# abra seu terminal
+hacker-chat --usename [SEU NOME]
+
+# se quizer criar uma sala e convidar amigos 
+hacker-chat --room [NOME DA SALA] --username [SEU NOME]
+
+```
