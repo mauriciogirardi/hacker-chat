@@ -1,6 +1,11 @@
 import { constants } from './constants.js'
 
-const { UPDATE_USERS, NEW_USER_CONNECTED } = constants.event
+const {
+  UPDATE_USERS,
+  NEW_USER_CONNECTED,
+  DISCONNECT_USER,
+  MESSAGE
+} = constants.event
 
 export default class Controller {
   #users = new Map()
@@ -12,7 +17,6 @@ export default class Controller {
 
   onNewConnection(socket) {
     const { id } = socket
-    console.log('connection', id)
 
     const userData = { id, socket }
     this.#updateGlobalUserData(id, userData)
@@ -24,14 +28,13 @@ export default class Controller {
 
   async joinRoom(socketId, data) {
     const userData = data
-    console.log(`${userData.userName} joined!`, [socketId])
     const { roomId } = userData
     const user = this.#updateGlobalUserData(socketId, userData)
     const users = this.#joinUserOnRoom(roomId, user)
 
     const currentUsers = Array.from(users.values())
       .map(({ id, userName }) => ({ userName, id }))
-    
+
     this.socketServer.sendMessage(user.socket, UPDATE_USERS, currentUsers)
 
     this.broadCast({
@@ -46,14 +49,26 @@ export default class Controller {
 
   }
 
-  broadCast({ socketId, roomId, event, message, includeCurrentSocket = false}) {
+  broadCast({ socketId, roomId, event, message, includeCurrentSocket = false }) {
     const usersOnRoom = this.#rooms.get(roomId)
 
-    for(const [key, user] of usersOnRoom) {
-      if(!includeCurrentSocket && key === socketId) continue; 
+    for (const [key, user] of usersOnRoom) {
+      if (!includeCurrentSocket && key === socketId) continue;
 
       this.socketServer.sendMessage(user.socket, event, message)
     }
+  }
+
+  message(socketId, data) {
+    const { userName, roomId } = this.#users.get(socketId)
+
+    this.broadCast({
+      roomId,
+      socketId,
+      event: MESSAGE,
+      message: { userName, message: data },
+      includeCurrentSocket: true
+    })
   }
 
   #joinUserOnRoom(roomId, user) {
@@ -69,15 +84,32 @@ export default class Controller {
       try {
         const { event, message } = JSON.parse(data)
         this[event](id, message)
-      }catch(e) {
+      } catch (e) {
         console.error(`wrong event format!!`, data.toString())
       }
     }
   }
 
+  #logoutUser(id, roomId) {
+    this.#users.delete(id)
+    const usersOnRoom = this.#rooms.get(roomId)
+    usersOnRoom.delete(id)
+
+    this.#rooms.set(roomId, usersOnRoom)
+  }
+
   #onSocketClosed(id) {
-    return data => {
-      console.log('onSocketClosed', id)
+    return _ => {
+      const { userName, roomId } = this.#users.get(id)
+
+      this.#logoutUser(id, roomId)
+
+      this.broadCast({
+        roomId,
+        message: { id, userName },
+        socketId: id,
+        event: DISCONNECT_USER
+      })
     }
   }
 
